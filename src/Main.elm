@@ -6,13 +6,11 @@ import Url
 import Html
 
 main = 
-    Browser.application
+    Browser.element
         { init = init
         , view = view
         , update = update
         , subscriptions = always Sub.none
-        , onUrlRequest = always NoOp
-        , onUrlChange = always NoOp
         }
 
 type alias Model = ()
@@ -20,13 +18,13 @@ type alias Model = ()
 type Msg =
     NoOp
 
-init : () -> Url.Url -> Browser.Navigation.Key -> (Model,Cmd msg)
-init flags url key =
+init : () -> (Model,Cmd msg)
+init flags =
     ((),Cmd.none)
 
 update msg model = (model, Cmd.none)
 
 view model = 
-    { title = "Test"
-    , body = List.singleton <| Html.div [] [Html.text "Testa"]
-    }
+    --{ title = "Test"
+    {--, body = List.singleton <|--} Html.div [] [Html.text "Testa"]
+    --}
