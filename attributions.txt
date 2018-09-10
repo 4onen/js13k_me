@@ -1,0 +1,7 @@
+Game developed by: Matthew Dupree
+
+Music tracks: N/A
+
+Special Thanks:
++ Inigo Quilez
+ + for his tutorials in Signed Distance Field rendering

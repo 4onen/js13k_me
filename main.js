@@ -1,11 +1,17 @@
 //Scoping (keeps global scope cleaner)
-(()=>{
+function runGame(){
     "use strict";
+    //The target number of glowing blue flowers
+    const t_tgt = 13;
 
     //Canvas
     var cvs;
     //OpenGL
     var gl;
+    //Start, Win, and Lose modals
+    var start;
+    var lose;
+    var win;
     //Frame count (since page load)
     var frameCount = 0;
     //Last hi-res timestamp
@@ -14,70 +20,72 @@
     var uloc =
         { iResolution: -1
         , cam: -1
-        , tgtpos: -1
+        , tpos: -1
+        , tscl: -1
         , ptpos: -1
+        , tut: -1
         };
     
     //Game variables
     var mdl = 
         { dir: 0
         , pos: {x:3,z:0}
-        , tgtpos: {x:4,z:20}
+        , tpos: {x:5,z:10}
         , ptpos: {x:0,z:0}
         , tsgot: 0
         , ksDwn: new Set([])
         };
     
-    const rot2dx = (ang,x)=>{
+    function rot2(x,z,ang){
         const s = Math.sin(ang);
         const c = Math.cos(ang);
-        return (c+s)*x;
+        return {x:c*x+s*z,z:c*z-s*x};
     }
 
-    const rot2dy = (ang,y)=>{
-        const s = Math.sin(ang);
-        const c = Math.cos(ang);
-        return (c-s)*y;
-    }
+    function kd(k){return mdl.ksDwn.has(k);}
 
-    const kd = k=>mdl.ksDwn.has(k);
+    function length(x,z){return Math.sqrt(x*x+z*z);}
 
-    const update = (delta)=>{
-        let mv = 0;
-        if(kd("ArrowUp")||kd("w"))
+    function update(delta){
+        var mv = 0;
+        if(kd("arrowup")||kd("w"))
             mv += 2;
-        if(kd("ArrowDown")||kd("s"))
+        if(kd("arrowdown")||kd("s"))
             mv -= 1.5;
-        if(kd("ArrowLeft")||kd("a"))
+        if(kd("arrowleft")||kd("a"))
             mdl.dir -= delta;
-        if(kd("ArrowRight")||kd("d"))
+        if(kd("arrowright")||kd("d"))
             mdl.dir += delta;
+        if(kd("shift"))
+            mv *= 2;
+        
         
         if(mv!=0){
-            mdl.pos.x += rot2dx(mdl.dir-Math.PI/4,mv*delta);
-            mdl.pos.z += rot2dy(mdl.dir-Math.PI/4,mv*delta);
+            const r = rot2(0,mv*delta,mdl.dir);
+            mdl.pos.x += r.x;
+            mdl.pos.z += r.z;
         }
 
-        let dx = mdl.pos.x-mdl.tgtpos.x;
-        let dz = mdl.pos.z-mdl.tgtpos.z;
-        if(dx*dx+dz*dz < 10){
-            mdl.ptpos = mdl.tgtpos;
-            mdl.tgtpos.x = 100*(0.5-Math.random());
-            mdl.tgtpos.y = 100*(0.5-Math.random());
+        const dx = mdl.pos.x-mdl.tpos.x;
+        const dz = mdl.pos.z-mdl.tpos.z;
+        if(length(dx,dz) < 3.5){
+            mdl.ptpos.x = mdl.tpos.x;
+            mdl.ptpos.z = mdl.tpos.z;
+            mdl.tpos.x = 100*(0.5-Math.random());
+            mdl.tpos.z = 100*(0.5-Math.random());
             mdl.tsgot += 1;
         }
-
-        if(mdl.tsgot == 3){
-            alert("You win! All 13 blue flowers found.");
-            mdl.tgtpos.x = Infinity;
-            mdl.tgtpos.z = Infinity;
-            mdl.ptpos.x = Infinity;
-            mdl.ptpos.z = Infinity;
-            mdl.tsgot = Infinity;
+        if(length(dx,dz) > 50){
+            if(length(mdl.pos.x-mdl.ptpos.x,mdl.pos.z-mdl.ptpos.z) > 50){
+                console.log(mdl.tpos);
+                console.log(mdl.ptpos);
+                mdl.tsgot = t_tgt+1;
+                lose.classList.add("open");
+            }
         }
     };
 
-    const draw = (t)=>{
+    function loop(t){
         //FPS
         const delta = (t-t_last)/1000
         if(frameCount%60==0){
@@ -93,20 +101,34 @@
         const c = Math.cos(mdl.dir);
         const cam = [c,-s,0.,s,c,0.,mdl.pos.x,mdl.pos.z,0.];
         gl.uniformMatrix3fv(uloc.cam,false,cam);
-        gl.uniform2f(uloc.tgtpos,mdl.tgtpos.x,mdl.tgtpos.z);
-        gl.uniform2f(uloc.ptpos,mdl.ptpos.x,mdl.ptpos.y);
+        gl.uniform2f(uloc.tpos,mdl.tpos.x,mdl.tpos.z);
+        gl.uniform2f(uloc.ptpos,mdl.ptpos.x,mdl.ptpos.z);
+        gl.uniform1f(uloc.tscl, 1-mdl.tsgot/(8*t_tgt));
+        gl.uniform1f(uloc.tut, mdl.tsgot > 0 ? 0 : 1);
 
         //Draw call
         gl.drawArrays(gl.TRIANGLES,0,6);
 
         //Loop
-        requestAnimationFrame(draw);
+        if(mdl.tsgot < t_tgt)
+            requestAnimationFrame(loop);
+        else{
+            win.classList.add("open");
+        }
         t_last = t; frameCount+=1;
     };
 
-    //====Run init====
+    //====Runtime init====
+    //Get menus
+    start = document.getElementById("start");
+    lose = document.getElementById("lose");
+    win = document.getElementById("win");
+    
+    //Hide start menu
+    start.classList.remove("open");
+
     //Get OpenGL
-    cvs = document.querySelector("canvas");
+    cvs = document.getElementById("game");
     gl = cvs.getContext("webgl");
     if(gl === null || gl === undefined){
         alert("Unable to initialize WebGL. Your browser or computer may not support it.");
@@ -118,7 +140,7 @@
     gl.clear(gl.COLOR_BUFFER_BIT);
     
     //Shader compiler func
-    const shcmp = (src,typ)=>{
+    function shcmp(src,typ){
         const shdr=gl.createShader(typ);
         gl.shaderSource(shdr,src);
         gl.compileShader(shdr);
@@ -164,8 +186,7 @@ gl_Position=vec4(vCoord,0.,1.);
     Object.keys(uloc).forEach(key => {
         const l=gl.getUniformLocation(pg,key);
         uloc[key]=l;
-        if(l===null||l<0){
-            console.log(key+": "+l);
+        if( l===null || l<0 ){
             throw key+" uloc not found! "+gl.getError();
         }
     });
@@ -173,20 +194,22 @@ gl_Position=vec4(vCoord,0.,1.);
     gl.viewport(0,0,cvs.width,cvs.height);
     
     //Start main loop
-    window.requestAnimationFrame(draw);
+    window.requestAnimationFrame(loop);
 
     //Enable controls
-    const usedKeys = new Set(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d"]);
+    const usedKeys = new Set(["arrowup","arrowdown","arrowleft","arrowright","w","a","s","d","shift"]);
     window.addEventListener('keydown',(e)=>{
-        if(usedKeys.has(e.key)){
-            mdl.ksDwn.add(e.key);
+        const k = e.key.toLowerCase();
+        if(usedKeys.has(k)){
+            mdl.ksDwn.add(k);
         }
     });
     window.addEventListener('keyup',(e)=>{
-        if(usedKeys.has(e.key)){
-            mdl.ksDwn.delete(e.key);
+        const k = e.key.toLowerCase();
+        if(usedKeys.has(k)){
+            mdl.ksDwn.delete(k);
         }
     });
 
 //End the function scope, then run it.
-})();
+}

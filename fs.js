@@ -3,10 +3,12 @@ const fs =
 
 uniform vec2 iResolution;
 uniform mat3 cam;
-uniform vec2 tgtpos;
+uniform vec2 tpos;
 uniform vec2 ptpos;
+uniform float tscl;
+uniform float tut;
 
-#define TGT vec3(tgtpos.x,-7.9,tgtpos.y)
+#define TGT vec3(tpos.x,-7.9,tpos.y)
 #define PTGT vec3(ptpos.x,-7.9,ptpos.y)
 //todo TGTscl
 
@@ -80,9 +82,9 @@ vec4 march(in vec3 o, in vec3 r){
 
 vec3 tgt(in vec3 o, in vec3 r){
     vec3 dir = TGT-o;
-    float d = length(dir);
-    float ca = length(dir-r*d);
-    return vec3(d,ca,min(d,length(PTGT-o)));
+    float d = length(dir)*tscl;
+    float ca = length(dir-r*d)*tscl;
+    return vec3(d,ca,min(d/tscl,length(PTGT-o)));
 }
 
 vec3 light(in vec3 o, in vec3 r){
@@ -102,9 +104,9 @@ vec3 light(in vec3 o, in vec3 r){
     
     vec3 tgt = tgt(o,r);
     
-    tot = mix(tot,vec3(0.,0.,1.),smoothstep(-.5,-.1,-tgt.y)*smoothstep(-20.,10.,-tgt.x));
-    tot = mix(tot,vec3(0.),smoothstep(40.,50.,tgt.z));
-    tot = tot+vec3(0.,0.,1.)*smoothstep(-10.,20.,-tgt.y);
+    tot = mix(tot,vec3(0.),max(tut,smoothstep(40.,50.,tgt.z)));//Darkness
+    tot = mix(tot,vec3(0.,0.,1.),smoothstep(-.5,-.1,-tgt.y)*smoothstep(-20.,10.,-tgt.x));//Big glow
+    tot = tot+vec3(0.,0.,1.)*smoothstep(-10.,20.,-tgt.y/tscl);//Small glow
     
     return tot;
 }
