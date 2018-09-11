@@ -1,5 +1,5 @@
 const fs = 
-`precision mediump float;
+`precision highp float;
 
 uniform vec2 iResolution;
 uniform mat3 cam;

@@ -12,6 +12,9 @@ function runGame(){
     var start;
     var lose;
     var win;
+    //Mobile controls
+    var arrowleft;
+    var arrowright;
     //Frame count (since page load)
     var frameCount = 0;
     //Last hi-res timestamp
@@ -198,18 +201,57 @@ gl_Position=vec4(vCoord,0.,1.);
 
     //Enable controls
     const usedKeys = new Set(["arrowup","arrowdown","arrowleft","arrowright","w","a","s","d","shift"]);
-    window.addEventListener('keydown',(e)=>{
+    window.addEventListener("keydown",(e)=>{
         const k = e.key.toLowerCase();
         if(usedKeys.has(k)){
             mdl.ksDwn.add(k);
         }
     });
-    window.addEventListener('keyup',(e)=>{
+    window.addEventListener("keyup",(e)=>{
         const k = e.key.toLowerCase();
         if(usedKeys.has(k)){
             mdl.ksDwn.delete(k);
         }
     });
+    function absorb(e){
+        e = e || window.event;
+        e.preventDefault && e.preventDefault();
+        e.stopPropagation && e.stopPropagation();
+        e.cancelBubble = true;
+        e.returnValue = false;
+        return false;
+    }
+    function touchstartFuncGen(k){
+        return (e)=>{
+            absorb(e);
+            mdl.ksDwn.add(k);
+        }
+    }
+    function touchendFuncGen(k){
+        return (e)=>{
+            absorb(e);
+            mdl.ksDwn.delete(k);
+        }
+    }
+    function addtouchcontrol(element,k){
+        element.addEventListener("touchstart",touchstartFuncGen(k));
+        element.addEventListener("mousedown",touchstartFuncGen(k));
+        element.addEventListener("touchend",touchendFuncGen(k));
+        element.addEventListener("mouseup",touchendFuncGen(k));
+        element.addEventListener("mouseout",touchendFuncGen(k));
+        element.addEventListener("mouseleave",touchendFuncGen(k));
+        element.addEventListener("touchcancel",touchendFuncGen(k));
+        element.addEventListener("mousemove",absorb);
+    }
+    arrowleft=document.getElementById("left");
+    if(arrowleft!=null)
+        addtouchcontrol(arrowleft,"arrowleft");
+
+    arrowright=document.getElementById("right");
+    if(arrowright!=null)
+        addtouchcontrol(arrowright,"arrowright");
+    
+    addtouchcontrol(cvs,"arrowup");
 
 //End the function scope, then run it.
 }
