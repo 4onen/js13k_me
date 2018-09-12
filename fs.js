@@ -104,7 +104,7 @@ vec3 light(in vec3 o, in vec3 r){
     
     vec3 tgt = tgt(o,r);
     
-    tot = mix(tot,vec3(0.),max(tut,smoothstep(40.,50.,tgt.z)));//Darkness
+    tot = mix(tot,vec3(0.),max(tut,smoothstep(40.,60.,tgt.z)));//Darkness
     tot = mix(tot,vec3(0.,0.,1.),smoothstep(-.5,-.1,-tgt.y)*smoothstep(-20.,10.,-tgt.x));//Big glow
     tot = tot+vec3(0.,0.,1.)*smoothstep(-10.,20.,-tgt.y/tscl);//Small glow
     

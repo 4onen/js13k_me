@@ -15,6 +15,8 @@ function runGame(){
     //Mobile controls
     var arrowleft;
     var arrowright;
+    //Progress counter
+    var counter;
     //Frame count (since page load)
     var frameCount = 0;
     //Last hi-res timestamp
@@ -77,11 +79,11 @@ function runGame(){
             mdl.tpos.x = 100*(0.5-Math.random());
             mdl.tpos.z = 100*(0.5-Math.random());
             mdl.tsgot += 1;
+            if(counter!=null)
+                counter.innerHTML = (mdl.tsgot).toString();
         }
-        if(length(dx,dz) > 50){
-            if(length(mdl.pos.x-mdl.ptpos.x,mdl.pos.z-mdl.ptpos.z) > 50){
-                console.log(mdl.tpos);
-                console.log(mdl.ptpos);
+        if(length(dx,dz) > 60){
+            if(length(mdl.pos.x-mdl.ptpos.x,mdl.pos.z-mdl.ptpos.z) > 60){
                 mdl.tsgot = t_tgt+1;
                 lose.classList.add("open");
             }
@@ -252,6 +254,10 @@ gl_Position=vec4(vCoord,0.,1.);
         addtouchcontrol(arrowright,"arrowright");
     
     addtouchcontrol(cvs,"arrowup");
+
+    counter = document.getElementById("counter");
+    if(counter!=null)
+        counter.innerHTML = (0).toString();
 
 //End the function scope, then run it.
 }
