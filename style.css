@@ -22,14 +22,13 @@ height:100%;
 display:none;
 position:fixed;
 width:40%;
-height:40%;
 margin:auto;
 top:0;
 left:0;
 bottom:0;
 right:0;
 background:black;
-font-size:2vmin;
+font-size:4vmin;
 text-align:center;
 }
 .open{
@@ -46,6 +45,7 @@ background:burlywood;
 }
 button{
 background:burlywood;
+font-size:1em;
 }
 #left{
 position:fixed;

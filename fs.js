@@ -10,7 +10,7 @@ uniform float tut;
 
 #define TGT vec3(tpos.x,-7.9,tpos.y)
 #define PTGT vec3(ptpos.x,-7.9,ptpos.y)
-//todo TGTscl
+#define TSCL smoothstep(-0.1,1.,tscl)
 
 //Thanks to Inigo Quilez for Smooth Minimum, iquilezles.org/www/articles/smin/smin.htm
 float smin( float a, float b, float k ){
@@ -55,12 +55,14 @@ float scene(in vec3 p){
 
     const float w = 6.;
 
-    p.xz = wrap2ws(p.xz,w,s);
+    vec3 pw;
+    pw.xzy = vec3(wrap2ws(p.xz,w,s),p.y);
 
 
-    float r = trunk(p);
-    r += -abs(5.*sin(p.y+p.x*p.z))
+    float r = trunk(pw);
+    r -= abs(5.*sin(p.y+pw.x*pw.z))
         *smoothstep(-5.,1.,p.y);
+    r -= 5.*smoothstep(40.,140.,min(length(p.xz-TGT.xz),length(p.xz-PTGT.xz)));
     return smin(
             r/s,
             min(8.0+p.y,-p.y),1./s
@@ -99,11 +101,11 @@ vec3 light(in vec3 o, in vec3 r){
     vec3 trs = mix(roots,lvs,smoothstep(0.,1.,p.y+3.));
     vec3 tot = mix(trs,fr,clamp(-p.y/4.,0.,1.)-d);
     
+    float ca = length(TGT-p);
+    tot = mix(tot,vec3(0.,0.,1.),smoothstep(-.5,-.1,-ca/TSCL)*smoothstep(-20.,10.,-length(TGT-o)*TSCL));//Big glow
+    tot = tot+vec3(0.,0.,1.)*smoothstep(-10.,20.,-ca/tscl);//Small glow
     tot = mix(tot,vec3(0.),smoothstep(0.,10.,smoothstep(0.,1.,tut)*length(p.xz)));//Tutorial Space
     tot = mix(tot,vec3(0.),smoothstep(60.,70.,min(length(TGT-o),length(PTGT-o)))); //Darkness
-    float ca = length(TGT-p);
-    tot = mix(tot,vec3(0.,0.,1.),smoothstep(-.5,-.1,-ca*tscl)*smoothstep(-20.,10.,-length(TGT-o)*tscl));//Big glow
-    tot = tot+vec3(0.,0.,1.)*smoothstep(-10.,20.,-ca);//Small glow
     
     return tot;
 }
@@ -112,7 +114,7 @@ void main(){
     vec2 u = (2.*gl_FragCoord.xy-iResolution.xy)/iResolution.y;
     
     vec3 o = vec3(cam[2][0],0.,cam[2][1]);
-    vec3 r = normalize(vec3(u,1.5));
+    vec3 r = normalize(vec3(u,1.1));
     r.xz = mat2(cam[0].xy,cam[1].xy)*r.xz;
 
     vec3 col = pow(clamp(light(o,r)*2.,0.,1.),vec3(1./2.2));

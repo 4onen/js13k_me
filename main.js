@@ -35,7 +35,7 @@ function runGame(){
     var mdl = 
         { dir: 0
         , pos: {x:3,z:-10}
-        , tpos: {x:0,z:-2}
+        , tpos: {x:0,z:-2,t:0}
         , ptpos: {x:0,z:0}
         , tsgot: 0
         , ksDwn: new Set([])
@@ -53,7 +53,8 @@ function runGame(){
     function length(x,z){return Math.sqrt(x*x+z*z);}
 
     function update(delta){
-        if(mdl.tsgot>0) mdl.tutAnim -= delta/4;
+        if(mdl.tsgot>0 && mdl.tutAnim>0) mdl.tutAnim -= delta/4;
+        if(mdl.tpos.t<1) mdl.tpos.t += delta/8;
 
         var mv = 0;
         if(kd("arrowup")||kd("w"))
@@ -81,6 +82,7 @@ function runGame(){
             mdl.ptpos.z = mdl.tpos.z;
             mdl.tpos.x = 60*(0.5-Math.random());
             mdl.tpos.z = 60*(0.5-Math.random());
+            mdl.tpos.t = 0;
             mdl.tsgot += 1;
             if(counter!=null)
                 counter.innerHTML = (mdl.tsgot).toString();
@@ -111,7 +113,7 @@ function runGame(){
         gl.uniformMatrix3fv(uloc.cam,false,cam);
         gl.uniform2f(uloc.tpos,mdl.tpos.x,mdl.tpos.z);
         gl.uniform2f(uloc.ptpos,mdl.ptpos.x,mdl.ptpos.z);
-        gl.uniform1f(uloc.tscl, 1-mdl.tsgot/(8*t_tgt));
+        gl.uniform1f(uloc.tscl, (1-mdl.tsgot/(8*t_tgt))*(mdl.tpos.t));
         gl.uniform1f(uloc.tut, mdl.tutAnim);
 
         //Draw call
