@@ -256,7 +256,7 @@ gl_Position=vec4(vCoord,0.,1.);
     if(arrowright!=null)
         addtouchcontrol(arrowright,"arrowright");
     
-    addtouchcontrol(cvs,"arrowup");
+    addtouchcontrol(document.body,"arrowup");
 
     counter = document.getElementById("counter");
     if(counter!=null)
