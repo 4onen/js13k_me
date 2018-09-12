@@ -34,11 +34,12 @@ function runGame(){
     //Game variables
     var mdl = 
         { dir: 0
-        , pos: {x:3,z:0}
-        , tpos: {x:5,z:10}
+        , pos: {x:3,z:-10}
+        , tpos: {x:0,z:-2}
         , ptpos: {x:0,z:0}
         , tsgot: 0
         , ksDwn: new Set([])
+        , tutAnim: 1
         };
     
     function rot2(x,z,ang){
@@ -52,6 +53,8 @@ function runGame(){
     function length(x,z){return Math.sqrt(x*x+z*z);}
 
     function update(delta){
+        if(mdl.tsgot>0) mdl.tutAnim -= delta/4;
+
         var mv = 0;
         if(kd("arrowup")||kd("w"))
             mv += 2;
@@ -76,14 +79,14 @@ function runGame(){
         if(length(dx,dz) < 3.5){
             mdl.ptpos.x = mdl.tpos.x;
             mdl.ptpos.z = mdl.tpos.z;
-            mdl.tpos.x = 100*(0.5-Math.random());
-            mdl.tpos.z = 100*(0.5-Math.random());
+            mdl.tpos.x = 60*(0.5-Math.random());
+            mdl.tpos.z = 60*(0.5-Math.random());
             mdl.tsgot += 1;
             if(counter!=null)
                 counter.innerHTML = (mdl.tsgot).toString();
         }
-        if(length(dx,dz) > 60){
-            if(length(mdl.pos.x-mdl.ptpos.x,mdl.pos.z-mdl.ptpos.z) > 60){
+        if(length(dx,dz) > 70){
+            if(length(mdl.pos.x-mdl.ptpos.x,mdl.pos.z-mdl.ptpos.z) > 70){
                 mdl.tsgot = t_tgt+1;
                 lose.classList.add("open");
             }
@@ -109,7 +112,7 @@ function runGame(){
         gl.uniform2f(uloc.tpos,mdl.tpos.x,mdl.tpos.z);
         gl.uniform2f(uloc.ptpos,mdl.ptpos.x,mdl.ptpos.z);
         gl.uniform1f(uloc.tscl, 1-mdl.tsgot/(8*t_tgt));
-        gl.uniform1f(uloc.tut, mdl.tsgot > 0 ? 0 : 1);
+        gl.uniform1f(uloc.tut, mdl.tutAnim);
 
         //Draw call
         gl.drawArrays(gl.TRIANGLES,0,6);

@@ -61,7 +61,11 @@ float scene(in vec3 p){
     float r = trunk(p);
     r += -abs(5.*sin(p.y+p.x*p.z))
         *smoothstep(-5.,1.,p.y);
-    return smin(r/s,min(8.0+p.y,-p.y),1./s)-0.1*noise2(10./s*p.xz)*smoothstep(6.,8.,-p.y);
+    return smin(
+            r/s,
+            min(8.0+p.y,-p.y),1./s
+            )
+            -0.1*noise2(10./s*p.xz)*smoothstep(6.,8.,-p.y);
 }
         
 vec4 march(in vec3 o, in vec3 r){
@@ -80,18 +84,11 @@ vec4 march(in vec3 o, in vec3 r){
     return vec4(o+r*t,t);
 }
 
-vec3 tgt(in vec3 o, in vec3 r){
-    vec3 dir = TGT-o;
-    float d = length(dir)*tscl;
-    float ca = length(dir-r*d)*tscl;
-    return vec3(d,ca,min(d/tscl,length(PTGT-o)));
-}
-
 vec3 light(in vec3 o, in vec3 r){
     o.y -= 6.;
     vec4 ret = march(o,r);
     float t=ret.w;vec3 p=ret.xyz;
-    float d = smoothstep(0.0,0.05,1./length(p.xz-o.xz));
+    float d=smoothstep(0.0,0.05,1./length(p.xz-o.xz));
     
     const vec3 grnd = vec3(0.025,0.08,0.);
     const vec3 brk = vec3(0.05,0.05,0.);
@@ -102,11 +99,11 @@ vec3 light(in vec3 o, in vec3 r){
     vec3 trs = mix(roots,lvs,smoothstep(0.,1.,p.y+3.));
     vec3 tot = mix(trs,fr,clamp(-p.y/4.,0.,1.)-d);
     
-    vec3 tgt = tgt(o,r);
-    
-    tot = mix(tot,vec3(0.),max(tut,smoothstep(40.,60.,tgt.z)));//Darkness
-    tot = mix(tot,vec3(0.,0.,1.),smoothstep(-.5,-.1,-tgt.y)*smoothstep(-20.,10.,-tgt.x));//Big glow
-    tot = tot+vec3(0.,0.,1.)*smoothstep(-10.,20.,-tgt.y/tscl);//Small glow
+    tot = mix(tot,vec3(0.),smoothstep(0.,10.,smoothstep(0.,1.,tut)*length(p.xz)));//Tutorial Space
+    tot = mix(tot,vec3(0.),smoothstep(60.,70.,min(length(TGT-o),length(PTGT-o)))); //Darkness
+    float ca = length(TGT-p);
+    tot = mix(tot,vec3(0.,0.,1.),smoothstep(-.5,-.1,-ca*tscl)*smoothstep(-20.,10.,-length(TGT-o)*tscl));//Big glow
+    tot = tot+vec3(0.,0.,1.)*smoothstep(-10.,20.,-ca);//Small glow
     
     return tot;
 }
