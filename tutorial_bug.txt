@@ -1,4 +1,0 @@
-    vec2 tgt = tgt(o,r);
-    
-    tot = tot+vec3(0.,0.,1.)*smoothstep(-2.,2.,tgt.x);
-    tot = mix(tot,vec3(0.,0.,1.),tgt.y);
