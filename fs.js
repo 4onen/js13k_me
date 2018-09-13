@@ -1,5 +1,4 @@
-const fs = 
-`precision highp float;
+const fs = `precision highp float;
 
 uniform vec2 iResolution;
 uniform mat3 cam;
@@ -12,13 +11,11 @@ uniform float tut;
 #define PTGT vec3(ptpos.x,-7.9,ptpos.y)
 #define TSCL smoothstep(-0.1,1.,tscl)
 
-//Thanks to Inigo Quilez for Smooth Minimum, iquilezles.org/www/articles/smin/smin.htm
 float smin( float a, float b, float k ){
     float h = clamp( 0.5+0.5*(b-a)/k, 0.0, 1.0 );
     return mix(b,a,h) - k*h*(1.0-h);
 }
 
-// 2D Random from Book Of Shaders, because magic numbers are hard to find.
 float rand2(in vec2 p) {
     return fract(sin(dot(p.xy,
                          vec2(12.9898,78.233)))
@@ -37,7 +34,7 @@ float noise2(in vec2 p){
 }
 
 vec2 wrap2(vec2 p, float w){
-    return p-w*floor(p/w+0.5);
+    return -w*floor(p/w+0.5)+p;
 }
 
 vec2 wrap2ws(vec2 p, float w, out float s){
@@ -60,7 +57,7 @@ float scene(in vec3 p){
 
 
     float r = trunk(pw);
-    r -= abs(5.*sin(p.y+pw.x*pw.z))
+    r -= abs(5.*sin(pw.x*pw.z+pw.y))
         *smoothstep(-5.,1.,p.y);
     r -= 5.*smoothstep(40.,140.,min(length(p.xz-TGT.xz),length(p.xz-PTGT.xz)));
     return smin(
